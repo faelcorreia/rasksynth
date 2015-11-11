@@ -37,31 +37,36 @@ float midi_manager::note_to_hertz(int note) {
 
 void midi_manager::start_read() {
 	PmEvent data;
-	int note, noteOn, velocity, size, oldMessage;
+	int note, noteOn, sum = 0, velocity, size;
 	float amp;
 	while (true) {
-		Pm_Read(stream, &data, 1);
-		if (oldMessage != data.message) {
-
+		if (Pm_Poll(stream)) {
+			Pm_Read(stream, &data, 1);
 			std::bitset<8> noteOn_message = std::bitset<8>(data.message);
 			noteOn = noteOn_message.to_ulong();
+			sum += noteOn > 128 ? 1 : -1;
 
-			std::bitset<8> note_message = std::bitset<8>((data.message >> 8));
-			note = note_message.to_ulong();
-
-			std::bitset<8> velocity_message = std::bitset<8>((data.message >> 16));
-			velocity = velocity_message.to_ulong();
-			
 			if (noteOn > 128) {
-				size = (int)(44100. / note_to_hertz(note));
-				amp = ((float)velocity/127.) * 0.3;				
+				std::bitset<8> note_message = std::bitset<8>((data.message >> 8));
+				note = note_message.to_ulong();	
+
+				std::bitset<8> velocity_message = std::bitset<8>((data.message >> 16));
+				velocity = velocity_message.to_ulong();
+			}
+
+			std::cout<<"Notes on: "<<sum<<" | Note: "<<note<<" | Velocity: "<<velocity<<std::endl;
+			
+			
+			if (sum == 0) {
+				amp = 0;
 			}
 			else {
-				amp = 0;				
+				size = (int)(44100. / note_to_hertz(note));
+				amp = ((float)velocity/127.) * 0.3;				
 			}
 			wgen->generate_wave(w, wtype, size+1);
 			w->set_amp(amp);			
 		}
-		oldMessage = data.message;
+		Pa_Sleep(10);
 	}
 }
