@@ -5,7 +5,7 @@ BUILD_FOLDER=build
 
 all: rasksynth
 
-rasksynth: main wave wave_generator audio_manager midi_manager
+rasksynth: main wave wave_generator audio_manager midi_message midi_manager
 	$(CC) -o bin/rasksynth -g $(BUILD_FOLDER)/*.o $(LIBS)
 
 main: src/main.cpp
@@ -19,6 +19,9 @@ wave_generator: src/wave_generator.cpp
 
 audio_manager: src/audio_manager.cpp
 	$(CC) $(CFLAGS) -o $(BUILD_FOLDER)/audio_manager.o -g src/audio_manager.cpp
+
+midi_message: src/midi_message.cpp
+	$(CC) $(CFLAGS) -o $(BUILD_FOLDER)/midi_message.o -g src/midi_message.cpp
 
 midi_manager: src/midi_manager.cpp
 	$(CC) $(CFLAGS) -o $(BUILD_FOLDER)/midi_manager.o -g src/midi_manager.cpp

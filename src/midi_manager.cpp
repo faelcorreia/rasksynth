@@ -1,25 +1,48 @@
 // midi_manager.cpp
 
 #include "midi_manager.h"
+#include "midi_message.h"
 #include <iostream>
 #include <cmath>
 #include <bitset>
 
 midi_manager::midi_manager() {
-	int type;
+	int type, i;
 	w = new wave(44100);
 	wgen = new wave_generator();
 	audiom = new audio_manager();
 	wgen->generate_wave(w, (wave_generator::wave_type)0, 200);
 	audiom->open(w);
 
-	std::cout<<"Which wave [1 for sine, 2 for square, 3 for saw, 4 for triangle]? "<<std::endl<<"> ";
+	std::cout<<"Which wave?"<<std::endl;
+	std::string str = "";
+	for (i=0; i<4; i++) {
+		switch(i) {
+			case 0:
+				str = "Sine";
+				break;
+			case 1:
+				str = "Square";
+				break;
+			case 2:
+				str = "Saw";
+				break;
+			case 3:
+				str = "Triangle";
+				break;
+			default:
+				break;		
+		}
+
+		std::cout<<"["<<(i+1)<<"] "<<str<<std::endl;
+	}
+	 
 	std::cin>>type;
 	wtype = (wave_generator::wave_type)type;
 
 
-	int count = Pm_CountDevices(), i;
-	std::cout<<"Select a midi input: "<<std::endl;
+	int count = Pm_CountDevices();
+	std::cout<<"Select a midi input:"<<std::endl;
 	do {
 		for (i=0; i<count; i++) {
 			std::cout<<"["<<i<<"] "<<Pm_GetDeviceInfo(i)->name<<std::endl;		
@@ -37,25 +60,24 @@ float midi_manager::note_to_hertz(int note) {
 
 void midi_manager::start_read() {
 	PmEvent data;
-	int note, noteOn, sum = 0, velocity, size;
+	int note, noteOn, velocity, size, sum = 0;
 	float amp;
 	while (true) {
 		if (Pm_Poll(stream)) {
 			Pm_Read(stream, &data, 1);
-			std::bitset<8> noteOn_message = std::bitset<8>(data.message);
-			noteOn = noteOn_message.to_ulong();
-			sum += noteOn > 128 ? 1 : -1;
-
-			if (noteOn > 128) {
-				std::bitset<8> note_message = std::bitset<8>((data.message >> 8));
-				note = note_message.to_ulong();	
-
-				std::bitset<8> velocity_message = std::bitset<8>((data.message >> 16));
-				velocity = velocity_message.to_ulong();
-			}
-
-			std::cout<<"Notes on: "<<sum<<" | Note: "<<note<<" | Velocity: "<<velocity<<std::endl;
 			
+			midi_message ms = midi_message(data.message);
+
+			noteOn = ms.get_note_on();
+			
+			if (noteOn == 1) {
+				sum += 1;
+				note = ms.get_note();
+				velocity = ms.get_velocity();
+			}
+			else {
+				sum -= 1;
+			}
 			
 			if (sum == 0) {
 				amp = 0;
