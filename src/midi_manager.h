@@ -6,13 +6,14 @@
 #include <portmidi.h>
 #include "audio_manager.h"
 #include "wave_generator.h"
+#include "wave.h"
 
 class midi_manager {
 	private:
 		PortMidiStream *stream;
 		int deviceId;
 		audio_manager * audiom;
-		float * wave;
+		wave * w;
 		wave_generator * wgen;
 		wave_generator::wave_type wtype;	
 	public:

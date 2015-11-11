@@ -7,8 +7,6 @@
 audio_manager::audio_manager() {
 	PaError err;
  	
- 	data.left_phase = data.right_phase = 0;
-
  	err = Pa_Initialize();
  	if( err != paNoError )
  		return;
@@ -32,22 +30,29 @@ int audio_manager::patestCallback(
     PaStreamCallbackFlags statusFlags,
     void *userData) {
 
-	paTestData *data = (paTestData*)userData;
+//	std::cout<<timeInfo->currentTime<<std::endl;
+
+	wave * w = (wave*)userData;
 	float *out = (float*)outputBuffer;
 	unsigned long i;
 	(void) timeInfo; /* Prevent unused variable warnings. */
 	(void) statusFlags;
 	(void) inputBuffer;
 	for( i=0; i<framesPerBuffer; i++ ) {
-		*out++ = data->wave[data->left_phase];  
-		*out++ = data->wave[data->right_phase]; 
-		data->left_phase += 1;
-		if(data->left_phase >= data->table_size)
-			data->left_phase -= data->table_size;
+		//RELEASE
+		//if (data->amp == 0) {
+		//	data->oldAmp = data->oldAmp >= 0.00001 ? data->oldAmp - 0.00001 : 0;
+		//}
+		*out++ = w->get_wave_table()[w->get_left_phase()] * w->get_amp();
+		*out++ = w->get_wave_table()[w->get_right_phase()] * w->get_amp();
 		
-		data->right_phase += 1;
-		if( data->right_phase >= data->table_size )
-			data->right_phase -= data->table_size;
+		w->set_left_phase(w->get_left_phase() + 1);
+		if(w->get_left_phase() >= w->get_table_size())
+			w->set_left_phase(w->get_left_phase() - w->get_table_size());			
+		
+		w->set_right_phase(w->get_right_phase() + 1);
+		if(w->get_right_phase() >= w->get_table_size())
+			w->set_right_phase(w->get_right_phase() - w->get_table_size());	
 
 
 	} 
@@ -58,10 +63,9 @@ void audio_manager::streamFinished(void * userData) {
 	//paTestData *data = (paTestData *) userData;
 }
 
-void audio_manager::open(float * wave, int table_size) {
+void audio_manager::open(wave * w) {
 	PaError err;
-	data.table_size = table_size;
-	data.wave = wave;
+	this->w = w;
  	
  	err = Pa_OpenStream(
            &stream,
@@ -71,7 +75,7 @@ void audio_manager::open(float * wave, int table_size) {
            paFramesPerBufferUnspecified,
            paClipOff,      /* we won't output out of range samples so don't bother clipping them */
            patestCallback,
-           &data );
+           w);
 	if(err != paNoError)
 		return;
 
@@ -82,11 +86,6 @@ void audio_manager::open(float * wave, int table_size) {
  	err = Pa_StartStream(stream);
  	if(err != paNoError)
  		return;
-}
-
-void audio_manager::change_note(float * wave, int table_size) {
-	data.table_size = table_size;
-	data.wave = wave;
 }
 
 void audio_manager::stop() {

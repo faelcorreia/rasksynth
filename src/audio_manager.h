@@ -1,30 +1,22 @@
 // audio_manager.h
 
 #include <portaudio.h>
+#include "wave.h"
 
 #ifndef AUDIO_MANAGER_H
 #define AUDIO_MANAGER_H
 
 #define SAMPLE_RATE   (44100)
 
-typedef struct {
- 	float * wave;
- 	int table_size;
- 	int left_phase;
- 	int right_phase;
- 	char message[20];
-}paTestData;
-
 class audio_manager {
 private:
 	PaStreamParameters outputParameters;
-	paTestData data;
+	wave * w;
 	PaStream *stream;
 	
 public:
    audio_manager();
-   void open(float * wave, int table_size);
-   void change_note(float * wave, int table_size);
+   void open(wave * w);
    void stop();
    void terminate();
    static int patestCallback(

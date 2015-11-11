@@ -7,11 +7,11 @@
 
 midi_manager::midi_manager() {
 	int type;
+	w = new wave(44100);
 	wgen = new wave_generator();
 	audiom = new audio_manager();
-	wave = new float[12544];
-	wgen->generate_wave(wave, (wave_generator::wave_type)0, 200);
-	audiom->open(wave, 200);
+	wgen->generate_wave(w, (wave_generator::wave_type)0, 200);
+	audiom->open(w);
 
 	std::cout<<"Which wave [1 for sine, 2 for square, 3 for saw, 4 for triangle]? "<<std::endl<<"> ";
 	std::cin>>type;
@@ -37,24 +37,31 @@ float midi_manager::note_to_hertz(int note) {
 
 void midi_manager::start_read() {
 	PmEvent data;
-	int note, noteOn, size;
+	int note, noteOn, velocity, size, oldMessage;
+	float amp;
 	while (true) {
 		Pm_Read(stream, &data, 1);
-		
-		std::bitset<8> note_message = std::bitset<8>((data.message >> 8));
-		note = note_message.to_ulong();
+		if (oldMessage != data.message) {
 
-		std::bitset<1> noteOn_message = std::bitset<1>((data.message >> 22));
-		noteOn = noteOn_message.to_ulong();
+			std::bitset<8> noteOn_message = std::bitset<8>(data.message);
+			noteOn = noteOn_message.to_ulong();
 
-		if (noteOn == 1) {
-			size = (int)(44100. / note_to_hertz(note));
-			wgen->generate_wave(wave, wtype, size);
+			std::bitset<8> note_message = std::bitset<8>((data.message >> 8));
+			note = note_message.to_ulong();
+
+			std::bitset<8> velocity_message = std::bitset<8>((data.message >> 16));
+			velocity = velocity_message.to_ulong();
+			
+			if (noteOn > 128) {
+				size = (int)(44100. / note_to_hertz(note));
+				amp = ((float)velocity/127.) * 0.3;				
+			}
+			else {
+				amp = 0;				
+			}
+			wgen->generate_wave(w, wtype, size+1);
+			w->set_amp(amp);			
 		}
-		else {
-			wgen->generate_wave(wave, (wave_generator::wave_type)0, 200);	
-		}
-		
-		audiom->change_note(wave, size);
+		oldMessage = data.message;
 	}
 }

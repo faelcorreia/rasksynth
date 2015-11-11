@@ -5,11 +5,11 @@
 #include <cstdlib>
 #include <iostream>
 
-void print_wave(float * wave, int size) {
+void wave_generator::print_wave(wave * w, int size) {
    int i, j;
    int offset = 30;
    for (i=0; i<size; i++) {
-      int max = wave[i] * offset;
+      int max = w->get_wave_table()[i] * offset;
       for (j=-1 * offset; j<=offset; j++) {
          if (j == 0)
             std::cout<<"|";
@@ -22,67 +22,68 @@ void print_wave(float * wave, int size) {
    }
 }
 
-void wave_generator::generate_wave(float * wave, wave_type type, int size) {
+void wave_generator::generate_wave(wave * w, wave_type type, int size) {
    switch(type) {
       case BLANK:
-         blank(wave, size);
+         blank(w, size);
          break;
       case SINE:
-         sine(wave, size);
+         sine(w, size);
          break;
       case SQUARE:
-         square(wave, size);
+         square(w, size);
          break;
       case SAW:
-         saw(wave, size);
+         saw(w, size);
          break;
       case TRIANGLE:
-         triangle(wave, size);
+         triangle(w, size);
          break;
       default:
          break;
-   }   
+   }
+   w->set_table_size(size);
 }
 
-void wave_generator::blank(float * wave, int size) {
+void wave_generator::blank(wave * w, int size) {
    int i;
    for(i=0; i<size; i++) {
-      wave[i] = 0;
+      w->get_wave_table()[i] = 0;
    }
 }
 
-void wave_generator::sine(float * wave, int size) {
+void wave_generator::sine(wave * w, int size) {
    int i;
    float fsize = (float)size;
    for(i=0; i<size; i++) {
-      wave[i] = (float) sin(2. * M_PI * ((float)i/(fsize+1.)));
+      w->get_wave_table()[i] = (float) sin(2. * M_PI * ((float)i/(fsize+1.)));
    }
 }
 
-void wave_generator::square(float * wave, int size) {
+void wave_generator::square(wave * w, int size) {
    int i;
-   wave[0] = 0;
-   wave[size-1] = 0;
+   w->get_wave_table()[0] = 0;
+   w->get_wave_table()[size-1] = 0;
    for(i=1; i<size-1; i++) {
-      wave[i] = i<size/2 ? 1 : -1;      
+      w->get_wave_table()[i] = i<size/2 ? 1 : -1;      
    }
 }
 
-void wave_generator::saw(float * wave, int size) {
+void wave_generator::saw(wave * w, int size) {
    int i;
    float fsize = (float)size;
    for(i=0; i<size-1; i++) {
-      wave[i] = 1 - (1. / (fsize/2.) * i);
+      w->get_wave_table()[i] = 1 - (1. / (fsize/2.) * i);
    }
 }
 
-void wave_generator::triangle(float * wave, int size) {
+void wave_generator::triangle(wave * w, int size) {
    int i;
    float fsize = (float)size;
    for(i=0; i<size; i++) { 
       if (i <= size/2)
-         wave[i] = -1 + (2./(fsize/2.)) * i;
+         w->get_wave_table()[i] = -1 + (2./(fsize/2.)) * i;
       else
-         wave[i] = 3 - (2./(fsize/2.)) * i;
+         w->get_wave_table()[i] = 3 - (2./(fsize/2.)) * i;
    }
 }

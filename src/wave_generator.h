@@ -3,17 +3,20 @@
 #ifndef WAVE_GENERATOR_H
 #define WAVE_GENERATOR_H
 
+#include "wave.h"
+
 class wave_generator {
 private:
-	void blank(float * wave, int size);
-	void sine(float * wave, int size);
-	void square(float * wave, int size);
-	void saw(float * wave, int size);
-	void triangle(float * wave, int size);
+	void blank(wave * w, int size);
+	void sine(wave * w, int size);
+	void square(wave * w, int size);
+	void saw(wave * w, int size);
+	void triangle(wave * w, int size);
 
 public:
 	enum wave_type { BLANK = 0, SINE = 1, SQUARE = 2, SAW = 3, TRIANGLE = 4};
-	void generate_wave(float * wave, wave_type type, int size);
+	void generate_wave(wave * w, wave_type type, int size);
+	void print_wave(wave * w, int size);
 };
 
 #endif
