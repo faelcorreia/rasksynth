@@ -19,67 +19,65 @@ void print_wave(float * wave, int size) {
             std::cout<<" ";
       }
       std::cout<<std::endl;
-   }   
+   }
 }
 
-float * wave_generator::generate_wave(wave_type type, int size) {
-   float * wave;
+void wave_generator::generate_wave(float * wave, wave_type type, int size) {
    switch(type) {
+      case BLANK:
+         blank(wave, size);
+         break;
       case SINE:
-         wave = sine(size);
+         sine(wave, size);
          break;
       case SQUARE:
-         wave = square(size);
+         square(wave, size);
          break;
       case SAW:
-         wave = saw(size);
+         saw(wave, size);
          break;
       case TRIANGLE:
-         wave = triangle(size);
+         triangle(wave, size);
          break;
       default:
          break;
-   }
-   return wave;
+   }   
 }
 
-float * wave_generator::sine(int size) {
+void wave_generator::blank(float * wave, int size) {
    int i;
-   float * wave = new float[size];
+   for(i=0; i<size; i++) {
+      wave[i] = 0;
+   }
+}
+
+void wave_generator::sine(float * wave, int size) {
+   int i;
    float fsize = (float)size;
    for(i=0; i<size; i++) {
       wave[i] = (float) sin(2. * M_PI * ((float)i/(fsize+1.)));
    }
-   print_wave(wave, size);
-   return wave;
 }
 
-float * wave_generator::square(int size) {
+void wave_generator::square(float * wave, int size) {
    int i;
-   float * wave = new float[size];
    wave[0] = 0;
    wave[size-1] = 0;
    for(i=1; i<size-1; i++) {
       wave[i] = i<size/2 ? 1 : -1;      
    }
-   print_wave(wave, size);
-   return wave;
 }
 
-float * wave_generator::saw(int size) {
+void wave_generator::saw(float * wave, int size) {
    int i;
-   float * wave = new float[size];
    float fsize = (float)size;
    for(i=0; i<size-1; i++) {
       wave[i] = 1 - (1. / (fsize/2.) * i);
    }
-   print_wave(wave, size);
-   return wave;
 }
 
-float * wave_generator::triangle(int size) {
+void wave_generator::triangle(float * wave, int size) {
    int i;
-   float * wave = new float[size];
    float fsize = (float)size;
    for(i=0; i<size; i++) { 
       if (i <= size/2)
@@ -87,6 +85,4 @@ float * wave_generator::triangle(int size) {
       else
          wave[i] = 3 - (2./(fsize/2.)) * i;
    }
-   print_wave(wave, size);
-   return wave;
 }

@@ -5,14 +5,15 @@
 
 class wave_generator {
 private:
-	float * sine(int size);
-	float * square(int size);
-	float * saw(int size);
-	float * triangle(int size);
+	void blank(float * wave, int size);
+	void sine(float * wave, int size);
+	void square(float * wave, int size);
+	void saw(float * wave, int size);
+	void triangle(float * wave, int size);
 
 public:
-	enum wave_type { SINE = 0, SQUARE = 1, SAW = 2, TRIANGLE = 3};
-	float * generate_wave(wave_type type, int size);
+	enum wave_type { BLANK = 0, SINE = 1, SQUARE = 2, SAW = 3, TRIANGLE = 4};
+	void generate_wave(float * wave, wave_type type, int size);
 };
 
 #endif
