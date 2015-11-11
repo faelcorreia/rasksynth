@@ -2,56 +2,26 @@
 
 #include "midi_manager.h"
 #include "midi_message.h"
-#include <iostream>
 #include <cmath>
-#include <bitset>
 
-midi_manager::midi_manager() {
-	int type, i;
+midi_manager::midi_manager(wave_generator * wgen, wave_generator::wave_type wtype, audio_manager * audiom) {
 	w = new wave(44100);
-	wgen = new wave_generator();
-	audiom = new audio_manager();
-	wgen->generate_wave(w, (wave_generator::wave_type)0, 200);
-	audiom->open(w);
+	this->wgen = wgen;
+	this->audiom = new audio_manager();
+	this->wtype = wtype;	
+	audiom->open(w);	
+}
 
-	std::cout<<"Which wave?"<<std::endl;
-	std::string str = "";
-	for (i=0; i<4; i++) {
-		switch(i) {
-			case 0:
-				str = "Sine";
-				break;
-			case 1:
-				str = "Square";
-				break;
-			case 2:
-				str = "Saw";
-				break;
-			case 3:
-				str = "Triangle";
-				break;
-			default:
-				break;		
-		}
+int midi_manager::get_count() {
+	return Pm_CountDevices();
+}
 
-		std::cout<<"["<<(i+1)<<"] "<<str<<std::endl;
-	}
-	 
-	std::cin>>type;
-	wtype = (wave_generator::wave_type)type;
+const char * midi_manager::get_device_name(int id) {
+	return Pm_GetDeviceInfo(id)->name;
+}
 
-
-	int count = Pm_CountDevices();
-	std::cout<<"Select a midi input:"<<std::endl;
-	do {
-		for (i=0; i<count; i++) {
-			std::cout<<"["<<i<<"] "<<Pm_GetDeviceInfo(i)->name<<std::endl;		
-		}
-		std::cout<<"> ";
-		std::cin>>deviceId;
-	} while(deviceId < 0 || deviceId > count);
-
-	Pm_OpenInput(&stream, deviceId, NULL, 128, NULL, NULL);
+void midi_manager::set_device(int id) {
+	Pm_OpenInput(&stream, id, NULL, 128, NULL, NULL);	
 }
 
 float midi_manager::note_to_hertz(int note) {

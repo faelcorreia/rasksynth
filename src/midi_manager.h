@@ -17,8 +17,11 @@ class midi_manager {
 		wave_generator * wgen;
 		wave_generator::wave_type wtype;	
 	public:
-		midi_manager();
+		midi_manager(wave_generator * wgen, wave_generator::wave_type wtype, audio_manager * audiom);
 		void start_read();
+		int get_count();
+		const char * get_device_name(int id);
+		void set_device(int id);
 		float note_to_hertz(int note);
 };
 
