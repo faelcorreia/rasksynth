@@ -16,7 +16,7 @@ class wave_generator {
 	public:
 		enum wave_type { BLANK = 0, SINE = 1, SQUARE = 2, SAW = 3, TRIANGLE = 4, WHITE_NOISE = 5};
 		void generate_wave(wave * w, wave_type type, int size);
-		void print_wave(wave * w, int size);
+		void print_wave(wave * w, int size, int freq);
 };
 
 #endif

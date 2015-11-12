@@ -51,7 +51,7 @@ void midi_manager::start_read() {
 			
 			amp = ((float)velocity/127.) * 0.3;
 			
-			w->set_step((int)note_to_hertz(note));
+			w->set_freq(note_to_hertz(note));
 			w->set_amp(amp);		
 		}
 		Pa_Sleep(10);

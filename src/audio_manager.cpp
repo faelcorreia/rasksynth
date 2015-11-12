@@ -13,13 +13,13 @@ audio_manager::audio_manager() {
  	if( err != paNoError )
  		return;
  	
- 	outputParameters.device = Pa_GetDefaultOutputDevice(); /* default output device */
+ 	outputParameters.device = Pa_GetDefaultOutputDevice();
  	if (outputParameters.device == paNoDevice) {
  		return;
 	}
  	
- 	outputParameters.channelCount = 2;       /* stereo output */
- 	outputParameters.sampleFormat = paFloat32; /* 32 bit floating point output */
+ 	outputParameters.channelCount = 2;
+ 	outputParameters.sampleFormat = paFloat32;
  	outputParameters.suggestedLatency = Pa_GetDeviceInfo( outputParameters.device )->defaultLowOutputLatency;
  	outputParameters.hostApiSpecificStreamInfo = NULL;
 }
@@ -32,34 +32,32 @@ int audio_manager::callback(
     PaStreamCallbackFlags statusFlags,
     void *userData) {
 
-//	std::cout<<timeInfo->currentTime<<std::endl;
-
 	wave * w = (wave*)userData;
 	float *out = (float*)outputBuffer;
 	float amp = audio_manager::get_transition_amp();
-	float step = 0.0001;
+	float step = 0.001;
 	unsigned long i;
-	(void) timeInfo; /* Prevent unused variable warnings. */
+	(void) timeInfo;
 	(void) statusFlags;
 	(void) inputBuffer;
 	for( i=0; i<framesPerBuffer; i++ ) {
 		if (!w->get_mute())
-			amp = amp <= w->get_amp() - step ? amp + step : w->get_amp();
+			amp = amp <= w->get_amp() - step ? amp + step : w->get_amp();			
 		else
-			amp = amp >= step ? amp - step : 0;
+			amp = amp >= step ? amp - step : 0;			
 
-		*out++ = w->get_wave_table()[w->get_left_phase()] * amp;
-		*out++ = w->get_wave_table()[w->get_right_phase()] * amp;
+		// @todo CHANGE PHASE TO FLOAT TO BEST INCREMENT
+
+		*out++ = w->get_wave_table()[(int)w->get_left_phase()] * amp;
+		*out++ = w->get_wave_table()[(int)w->get_right_phase()] * amp;
 		
-		w->set_left_phase(w->get_left_phase() + w->get_step());
+		w->set_left_phase(w->get_left_phase() + w->get_freq());
 		if(w->get_left_phase() >= w->get_table_size())
 			w->set_left_phase(w->get_left_phase() - w->get_table_size());			
 		
-		w->set_right_phase(w->get_right_phase() + w->get_step());
+		w->set_right_phase(w->get_right_phase() + w->get_freq());
 		if(w->get_right_phase() >= w->get_table_size())
-			w->set_right_phase(w->get_right_phase() - w->get_table_size());	
-
-
+			w->set_right_phase(w->get_right_phase() - w->get_table_size());
 	}
 	audio_manager::set_transition_amp(amp);
 	return paContinue;
@@ -83,11 +81,11 @@ void audio_manager::open(wave * w) {
  	
  	err = Pa_OpenStream(
            &stream,
-           NULL, /* no input */
+           NULL,
            &outputParameters,
            SAMPLE_RATE,
            paFramesPerBufferUnspecified,
-           paClipOff,      /* we won't output out of range samples so don't bother clipping them */
+           paClipOff,
            callback,
            w);
 	if(err != paNoError)

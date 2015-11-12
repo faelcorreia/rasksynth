@@ -5,10 +5,10 @@
 #include <cstdlib>
 #include <iostream>
 
-void wave_generator::print_wave(wave * w, int size) {
+void wave_generator::print_wave(wave * w, int size, int freq) {
    int i, j;
    int offset = 30;
-   for (i=0; i<size; i++) {
+   for (i=0; i<size; i += freq) {
       int max = w->get_wave_table()[i] * offset;
       for (j=-1 * offset; j<=offset; j++) {
          if (j == 0)
