@@ -39,6 +39,9 @@ void wave_generator::generate_wave(wave * w, wave_type type, int size) {
       case TRIANGLE:
          triangle(w, size);
          break;
+      case WHITE_NOISE:
+         white_noise(w, size);
+         break;
       default:
          break;
    }
@@ -85,5 +88,12 @@ void wave_generator::triangle(wave * w, int size) {
          w->get_wave_table()[i] = -1 + (2./(fsize/2.)) * i;
       else
          w->get_wave_table()[i] = 3 - (2./(fsize/2.)) * i;
+   }
+}
+
+void wave_generator::white_noise(wave * w, int size) {
+   int i;
+   for(i=0; i<size; i++) {
+      w->get_wave_table()[i] = (float)((rand() % 200000) - 100000) / 100000.;      
    }
 }

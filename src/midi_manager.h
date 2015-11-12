@@ -13,11 +13,9 @@ class midi_manager {
 		PortMidiStream *stream;
 		int deviceId;
 		audio_manager * audiom;
-		wave * w;
-		wave_generator * wgen;
-		wave_generator::wave_type wtype;	
+		wave * w;	
 	public:
-		midi_manager(wave_generator * wgen, wave_generator::wave_type wtype, audio_manager * audiom);
+		midi_manager(wave * w, audio_manager * audiom);
 		void start_read();
 		int get_count();
 		const char * get_device_name(int id);

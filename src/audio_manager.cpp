@@ -4,10 +4,12 @@
 #include <cstddef>
 #include <iostream>
 
+float audio_manager::transition_amp = 0;
+
 audio_manager::audio_manager() {
 	PaError err;
- 	
- 	err = Pa_Initialize();
+
+	err = Pa_Initialize();
  	if( err != paNoError )
  		return;
  	
@@ -22,7 +24,7 @@ audio_manager::audio_manager() {
  	outputParameters.hostApiSpecificStreamInfo = NULL;
 }
 
-int audio_manager::patestCallback(
+int audio_manager::callback(
 	const void *inputBuffer,
 	void *outputBuffer,
     unsigned long framesPerBuffer,
@@ -34,29 +36,41 @@ int audio_manager::patestCallback(
 
 	wave * w = (wave*)userData;
 	float *out = (float*)outputBuffer;
+	float amp = audio_manager::get_transition_amp();
+	float step = 0.0001;
 	unsigned long i;
 	(void) timeInfo; /* Prevent unused variable warnings. */
 	(void) statusFlags;
 	(void) inputBuffer;
 	for( i=0; i<framesPerBuffer; i++ ) {
-		//RELEASE
-		//if (data->amp == 0) {
-		//	data->oldAmp = data->oldAmp >= 0.00001 ? data->oldAmp - 0.00001 : 0;
-		//}
-		*out++ = w->get_wave_table()[w->get_left_phase()] * w->get_amp();
-		*out++ = w->get_wave_table()[w->get_right_phase()] * w->get_amp();
+		if (!w->get_mute())
+			amp = amp <= w->get_amp() - step ? amp + step : w->get_amp();
+		else
+			amp = amp >= step ? amp - step : 0;
+
+		*out++ = w->get_wave_table()[w->get_left_phase()] * amp;
+		*out++ = w->get_wave_table()[w->get_right_phase()] * amp;
 		
-		w->set_left_phase(w->get_left_phase() + 1);
+		w->set_left_phase(w->get_left_phase() + w->get_step());
 		if(w->get_left_phase() >= w->get_table_size())
 			w->set_left_phase(w->get_left_phase() - w->get_table_size());			
 		
-		w->set_right_phase(w->get_right_phase() + 1);
+		w->set_right_phase(w->get_right_phase() + w->get_step());
 		if(w->get_right_phase() >= w->get_table_size())
 			w->set_right_phase(w->get_right_phase() - w->get_table_size());	
 
 
-	} 
+	}
+	audio_manager::set_transition_amp(amp);
 	return paContinue;
+}
+
+float audio_manager::get_transition_amp() {
+	return transition_amp;
+}
+
+void audio_manager::set_transition_amp(float amp) {
+	transition_amp = amp;
 }
 
 void audio_manager::streamFinished(void * userData) {
@@ -74,7 +88,7 @@ void audio_manager::open(wave * w) {
            SAMPLE_RATE,
            paFramesPerBufferUnspecified,
            paClipOff,      /* we won't output out of range samples so don't bother clipping them */
-           patestCallback,
+           callback,
            w);
 	if(err != paNoError)
 		return;

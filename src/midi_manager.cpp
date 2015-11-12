@@ -4,11 +4,9 @@
 #include "midi_message.h"
 #include <cmath>
 
-midi_manager::midi_manager(wave_generator * wgen, wave_generator::wave_type wtype, audio_manager * audiom) {
-	w = new wave(44100);
-	this->wgen = wgen;
+midi_manager::midi_manager(wave * w, audio_manager * audiom) {
+	this->w = w;
 	this->audiom = new audio_manager();
-	this->wtype = wtype;	
 	audiom->open(w);	
 }
 
@@ -30,7 +28,7 @@ float midi_manager::note_to_hertz(int note) {
 
 void midi_manager::start_read() {
 	PmEvent data;
-	int note, noteOn, velocity, size, sum = 0;
+	int note, noteOn, velocity, sum = 0;
 	float amp;
 	while (true) {
 		if (Pm_Poll(stream)) {
@@ -48,16 +46,13 @@ void midi_manager::start_read() {
 			else {
 				sum -= 1;
 			}
+
+			w->set_mute(sum == 0);
 			
-			if (sum == 0) {
-				amp = 0;
-			}
-			else {
-				size = (int)(44100. / note_to_hertz(note));
-				amp = ((float)velocity/127.) * 0.3;				
-			}
-			wgen->generate_wave(w, wtype, size+1);
-			w->set_amp(amp);			
+			amp = ((float)velocity/127.) * 0.3;
+			
+			w->set_step((int)note_to_hertz(note));
+			w->set_amp(amp);		
 		}
 		Pa_Sleep(10);
 	}

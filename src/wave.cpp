@@ -4,12 +4,14 @@
 
 wave::wave(int sample_rate) {
 	int i;
-	table_size = MAX_TABLE_SIZE;
-	wave_table = new float[sample_rate * MAX_TABLE_SIZE];
-	for (i=0; i<MAX_TABLE_SIZE; i++)
+	table_size = sample_rate;
+	wave_table = new float[table_size];
+	for (i=0; i<table_size; i++)
 		wave_table[i] = 0;
 	left_phase = right_phase = 0;
-	amp = 0;
+	amp = 0.;
+	mute = 0;
+	step = 1;
 }
 
 float * wave::get_wave_table() {
@@ -46,4 +48,20 @@ float wave::get_amp() {
 
 void wave::set_amp(float amp) {
 	this->amp = amp;
+}
+
+bool wave::get_mute() {
+	return mute;
+}
+
+void wave::set_mute(bool mute) {
+	this->mute = mute;
+}
+
+int wave::get_step() {
+	return step;
+}
+
+void wave::set_step(int step) {
+	this->step = step;
 }

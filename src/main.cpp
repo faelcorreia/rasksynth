@@ -9,7 +9,7 @@ int main(void) {
 	int i, type;
 	std::cout<<"Which wave?"<<std::endl;
 	std::string str = "";
-	for (i=0; i<4; i++) {
+	for (i=0; i<5; i++) {
 		switch(i) {
 			case 0:
 				str = "Sine";
@@ -23,6 +23,9 @@ int main(void) {
 			case 3:
 				str = "Triangle";
 				break;
+			case 4:
+				str = "White noise";
+				break;
 			default:
 				break;		
 		}
@@ -32,11 +35,14 @@ int main(void) {
 	std::cin>>type;
 
 	wave_generator::wave_type wtype = (wave_generator::wave_type)type;
+	wave_generator * wgen = new wave_generator();
+	wave * w = new wave(SAMPLE_RATE);
+	wgen->generate_wave(w, wtype, SAMPLE_RATE);
 
 	audio_manager * audiom = new audio_manager();
-	wave_generator * wgen = new wave_generator();
+	
 
-	midi_manager * midim = new midi_manager(wgen, wtype, audiom);
+	midi_manager * midim = new midi_manager(w, audiom);
 
 	int count = midim->get_count(), deviceId;
 	std::cout<<"Select a midi input:"<<std::endl;
